@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login, getCurrentUser } from "../features/auth/api/authApi";
+import { useAuth } from "../features/auth/AuthContext";
 import toast from "react-hot-toast";
 import Input from "../components/ui/form/Input";
 import Button from "../components/ui/Button";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -19,14 +21,14 @@ export default function LoginPage() {
 
     try {
       const data = await login(formData);
-      
+
       // Save tokens temporarily
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
-      
+
       // Fetch user info to check user type
       const userInfo = await getCurrentUser();
-      
+
       // Check if user is active
       if (!userInfo.is_active) {
         localStorage.removeItem("access_token");
@@ -35,13 +37,16 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      
+
       // Save user info to localStorage for routing
       localStorage.setItem("user", JSON.stringify(userInfo));
-      
+
+      // Refresh AuthContext to update user state
+      await refreshUser();
+
       // Allow both superusers and regular employees
       toast.success("Login successful!");
-      
+
       // Redirect based on user role
       const isAdmin = userInfo.is_superuser || userInfo.is_staff;
       if (isAdmin) {
@@ -51,11 +56,11 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error("Login error:", error);
-      
+
       // Clear tokens on error
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-      
+
       toast.error(
         error.response?.data?.detail || "Invalid credentials. Please try again."
       );

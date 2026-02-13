@@ -35,6 +35,18 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Failed to load dashboard:", error);
       toast.error("Failed to load dashboard data");
+      // Set default empty data so dashboard still renders
+      setStats({
+        total_tasks: 0,
+        completed_tasks: 0,
+        pending_tasks: 0,
+        overdue_tasks: 0,
+      });
+      setAlerts({
+        overdue_tasks: [],
+        delayed_tasks: [],
+      });
+      setTrendsData([]);
     } finally {
       setLoading(false);
     }

@@ -25,7 +25,10 @@ def dashboard_stats(request):
         return Response(cached_data)
     
     # Get organization context
-    if user.organization:
+    # Superusers can see all tasks, regular users see only their organization
+    if user.is_superuser or user.is_staff:
+        tasks = Task.active.all()
+    elif user.organization:
         tasks = Task.active.filter(organization=user.organization)
     else:
         tasks = Task.active.none()
@@ -71,7 +74,10 @@ def dashboard_alerts(request):
         return Response(cached_data)
     
     # Get organization context
-    if user.organization:
+    # Superusers can see all tasks, regular users see only their organization
+    if user.is_superuser or user.is_staff:
+        tasks = Task.active.all()
+    elif user.organization:
         tasks = Task.active.filter(organization=user.organization)
     else:
         tasks = Task.active.none()
@@ -112,18 +118,23 @@ def analytics_summary(request):
     user = request.user
     
     # Get organization
-    if not user.organization:
+    if not user.organization and not (user.is_superuser or user.is_staff):
         return Response({
             'error': 'User must belong to an organization'
         }, status=400)
     
     # Try to get from cache first
-    cache_key = f'analytics_summary_{user.organization_id}'
+    cache_key = f'analytics_summary_{user.organization_id if user.organization else "all"}'
     cached_data = cache.get(cache_key)
     if cached_data:
         return Response(cached_data)
     
-    summary = AnalyticsService.get_analytics_summary(user.organization)
+    # Superusers see all data, regular users see their organization
+    if user.is_superuser or user.is_staff:
+        # For superusers without organization, aggregate all organizations
+        summary = AnalyticsService.get_analytics_summary(user.organization)
+    else:
+        summary = AnalyticsService.get_analytics_summary(user.organization)
     
     # Cache for 5 minutes
     cache.set(cache_key, summary, 300)
@@ -142,7 +153,7 @@ def analytics_trends(request):
     user = request.user
     
     # Get organization
-    if not user.organization:
+    if not user.organization and not (user.is_superuser or user.is_staff):
         return Response({
             'error': 'User must belong to an organization'
         }, status=400)
@@ -150,11 +161,12 @@ def analytics_trends(request):
     period = request.query_params.get('period', '30d')
     
     # Try to get from cache first
-    cache_key = f'analytics_trends_{user.organization_id}_{period}'
+    cache_key = f'analytics_trends_{user.organization_id if user.organization else "all"}_{period}'
     cached_data = cache.get(cache_key)
     if cached_data:
         return Response(cached_data)
     
+    # Superusers see all data, regular users see their organization
     trends = AnalyticsService.get_analytics_trends(user.organization, period)
     
     response_data = {

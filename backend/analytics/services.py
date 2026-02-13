@@ -62,12 +62,17 @@ class AnalyticsService:
         Get comprehensive analytics summary.
         
         Args:
-            organization: Organization instance
+            organization: Organization instance or None (for superusers to see all data)
         
         Returns:
             dict: Analytics summary with completion rate, efficiency, etc.
         """
-        tasks = Task.active.filter(organization=organization)
+        # Filter by organization or get all tasks for superusers
+        if organization:
+            tasks = Task.active.filter(organization=organization)
+        else:
+            tasks = Task.active.all()
+            
         total_tasks = tasks.count()
         
         if total_tasks == 0:
@@ -120,7 +125,7 @@ class AnalyticsService:
         Get analytics trends over time.
         
         Args:
-            organization: Organization instance
+            organization: Organization instance or None (for superusers to see all data)
             period: Time period ('7d', '30d', '90d')
         
         Returns:
@@ -133,10 +138,13 @@ class AnalyticsService:
         start_date = timezone.now() - timedelta(days=days)
         
         # Get tasks created in period
-        tasks = Task.active.filter(
-            organization=organization,
-            created_at__gte=start_date
-        )
+        if organization:
+            tasks = Task.active.filter(
+                organization=organization,
+                created_at__gte=start_date
+            )
+        else:
+            tasks = Task.active.filter(created_at__gte=start_date)
         
         # Group by date
         trends = []
