@@ -213,7 +213,7 @@ GET /api/analytics/trends/?period=7d
 
 ### Immediate (Frontend Integration)
 1. ✅ **PROCEED** - Backend is ready for frontend integration
-2. Update frontend axios baseURL to http://127.0.0.1:8000
+2. Update frontend axios baseURL to https://loagma-emp-management.onrender.com
 3. Implement authentication flow in React
 4. Connect dashboard to real API data
 5. Implement task management features

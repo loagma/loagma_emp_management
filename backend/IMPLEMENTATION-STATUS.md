@@ -168,34 +168,34 @@ Test credentials:
 ### Test Authentication
 ```bash
 # Login
-curl -X POST http://127.0.0.1:8000/auth/login/ \
+curl -X POST https://loagma-emp-management.onrender.com/auth/login/ \
   -H "Content-Type: application/json" \
   -d '{"username": "manager1", "password": "password123"}'
 
 # Get current user
-curl -X GET http://127.0.0.1:8000/auth/me/ \
+curl -X GET https://loagma-emp-management.onrender.com/auth/me/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 ### Test Dashboard
 ```bash
 # Dashboard stats
-curl -X GET http://127.0.0.1:8000/api/dashboard/stats/ \
+curl -X GET https://loagma-emp-management.onrender.com/api/dashboard/stats/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 
 # Dashboard alerts
-curl -X GET http://127.0.0.1:8000/api/dashboard/alerts/ \
+curl -X GET https://loagma-emp-management.onrender.com/api/dashboard/alerts/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 ### Test Tasks
 ```bash
 # List tasks
-curl -X GET "http://127.0.0.1:8000/api/tasks/?status=assigned" \
+curl -X GET "https://loagma-emp-management.onrender.com/api/tasks/?status=assigned" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 
 # Create task
-curl -X POST http://127.0.0.1:8000/api/tasks/ \
+curl -X POST https://loagma-emp-management.onrender.com/api/tasks/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -207,7 +207,7 @@ curl -X POST http://127.0.0.1:8000/api/tasks/ \
   }'
 
 # Update task status
-curl -X PATCH http://127.0.0.1:8000/api/tasks/1/status/ \
+curl -X PATCH https://loagma-emp-management.onrender.com/api/tasks/1/status/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"status": "completed"}'
@@ -216,11 +216,11 @@ curl -X PATCH http://127.0.0.1:8000/api/tasks/1/status/ \
 ### Test Analytics
 ```bash
 # Analytics summary
-curl -X GET http://127.0.0.1:8000/api/analytics/summary/ \
+curl -X GET https://loagma-emp-management.onrender.com/api/analytics/summary/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 
 # Analytics trends
-curl -X GET "http://127.0.0.1:8000/api/analytics/trends/?period=30d" \
+curl -X GET "https://loagma-emp-management.onrender.com/api/analytics/trends/?period=30d" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 

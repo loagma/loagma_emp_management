@@ -93,7 +93,7 @@ None
 ### cURL
 
 ```bash
-curl -X GET http://127.0.0.1:8000/api/dashboard/stats/ \
+curl -X GET https://loagma-emp-management.onrender.com/api/dashboard/stats/ \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
   -H "Content-Type: application/json"
 ```
@@ -103,7 +103,7 @@ curl -X GET http://127.0.0.1:8000/api/dashboard/stats/ \
 ```python
 import requests
 
-url = "http://127.0.0.1:8000/api/dashboard/stats/"
+url = "https://loagma-emp-management.onrender.com/api/dashboard/stats/"
 headers = {
     "Authorization": "Bearer YOUR_TOKEN_HERE",
     "Content-Type": "application/json"
@@ -123,7 +123,7 @@ print(f"Overdue: {data['overdue_tasks']}")
 ```javascript
 import axios from 'axios';
 
-const response = await axios.get('http://localhost:8000/api/dashboard/stats/', {
+const response = await axios.get('https://loagma-emp-management.onrender.com/api/dashboard/stats/', {
   headers: {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
@@ -216,14 +216,14 @@ python manage.py runserver
 
 2. Get authentication token:
 ```bash
-curl -X POST http://127.0.0.1:8000/auth/login/ \
+curl -X POST https://loagma-emp-management.onrender.com/auth/login/ \
   -H "Content-Type: application/json" \
   -d '{"username": "your_username", "password": "your_password"}'
 ```
 
 3. Test dashboard stats:
 ```bash
-curl -X GET http://127.0.0.1:8000/api/dashboard/stats/ \
+curl -X GET https://loagma-emp-management.onrender.com/api/dashboard/stats/ \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
