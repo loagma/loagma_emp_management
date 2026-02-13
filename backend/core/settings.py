@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'attendance',
     'analytics',
     'automation',
+    "corsheaders",
 ]
 
 
@@ -226,9 +227,14 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite dev server
     "http://localhost:3000",  # Alternative frontend port
+    "https://loagma-emp-management-2.onrender.com",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://loagma-emp-management-2.onrender.com",
+]
 
 
 # ===============================
