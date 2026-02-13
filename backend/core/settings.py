@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     'attendance',
     'analytics',
     'automation',
-    "corsheaders",
 ]
 
 
