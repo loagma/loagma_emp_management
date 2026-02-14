@@ -87,8 +87,66 @@ class EmployeeViewSet(OrganizationQuerysetMixin, viewsets.ModelViewSet):
         employee.is_active = not employee.is_active
         employee.save()
         
+        status_text = "activated" if employee.is_active else "deactivated"
+        
         serializer = self.get_serializer(employee)
-        return Response(serializer.data)
+        return Response({
+            'message': f'Employee {status_text} successfully',
+            'employee': serializer.data
+        })
+    
+    @action(detail=True, methods=['get'])
+    def monthly_report(self, request, pk=None):
+        """Generate and download monthly performance report"""
+        from django.http import HttpResponse, JsonResponse
+        
+        employee = self.get_object()
+        
+        # Get year and month from query params (default to current month)
+        from django.utils import timezone
+        now = timezone.now()
+        
+        try:
+            year = int(request.query_params.get('year', now.year))
+            month = int(request.query_params.get('month', now.month))
+        except (ValueError, TypeError) as e:
+            return JsonResponse({
+                'error': f'Invalid year or month parameter: {str(e)}'
+            }, status=400)
+        
+        try:
+            # Import here to catch import errors
+            from .simple_report import SimpleEmployeeReport
+            
+            # Generate report
+            report = SimpleEmployeeReport(employee, year, month)
+            pdf_buffer = report.generate_pdf()
+            
+            # Create response
+            response = HttpResponse(pdf_buffer, content_type='application/pdf')
+            filename = f"{employee.username}_report_{year}_{month:02d}.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
+            return response
+        except ImportError as e:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({
+                'error': f'Import error: {str(e)}',
+                'type': 'ImportError'
+            }, status=500)
+        except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            print("="*50)
+            print("ERROR GENERATING REPORT:")
+            print(error_trace)
+            print("="*50)
+            return JsonResponse({
+                'error': f'Failed to generate report: {str(e)}',
+                'type': type(e).__name__,
+                'trace': error_trace
+            }, status=500)
     
     def get_queryset(self):
         """Get employees in user's organization"""

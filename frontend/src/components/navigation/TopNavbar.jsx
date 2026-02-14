@@ -30,7 +30,7 @@ export default function TopNavbar({ onCreateTask, onAddEmployee }) {
   // Close dropdowns when clicking outside
   useClickOutside(notificationRef, () => setOpenNotifications(false));
   useClickOutside(profileRef, () => setOpenProfile(false));
-  
+
   // Close dropdowns on Escape key
   useEscapeKey(() => {
     setOpenNotifications(false);
@@ -91,11 +91,13 @@ export default function TopNavbar({ onCreateTask, onAddEmployee }) {
         </div>
 
 
-        {/* Quick Action Button */}
-        <QuickActionMenu 
-          onCreateTask={onCreateTask}
-          onAddEmployee={onAddEmployee}
-        />
+        {/* Quick Action Button - Admin Only */}
+        {(user?.is_superuser || user?.is_staff) && (
+          <QuickActionMenu
+            onCreateTask={onCreateTask}
+            onAddEmployee={onAddEmployee}
+          />
+        )}
 
 
         {/* User Profile */}

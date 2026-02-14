@@ -33,7 +33,7 @@ export default function LoginPage() {
       if (!userInfo.is_active) {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
-        toast.error("Your account is inactive. Please contact administrator.");
+        toast.error("Your account has been deactivated. Please contact your administrator for assistance.");
         setLoading(false);
         return;
       }

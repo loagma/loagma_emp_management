@@ -13,4 +13,5 @@ urlpatterns = [
         'delete': 'destroy'
     }), name='employee-detail'),
     path('employees/<int:pk>/toggle-active/', EmployeeViewSet.as_view({'patch': 'toggle_active'}), name='employee-toggle-active'),
+    path('employees/<int:pk>/monthly-report/', EmployeeViewSet.as_view({'get': 'monthly_report'}), name='employee-monthly-report'),
 ]

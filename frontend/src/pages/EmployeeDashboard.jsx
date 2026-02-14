@@ -26,7 +26,7 @@ export default function EmployeeDashboard() {
       const now = new Date();
       const punchInTime = new Date(attendance.punch_in);
       const elapsed = Math.floor((now - punchInTime) / 1000);
-      
+
       // Calculate break time
       let totalBreak = 0;
       if (attendance.breaks) {
@@ -42,7 +42,7 @@ export default function EmployeeDashboard() {
           }
         });
       }
-      
+
       setElapsedTime(elapsed);
       setBreakTime(totalBreak);
     }, 1000);
@@ -54,35 +54,46 @@ export default function EmployeeDashboard() {
     try {
       setLoading(true);
       const data = await getCurrentAttendance();
-      
+
       // If status is not_punched_in, check if there's a completed attendance for today
       if (data.status === 'not_punched_in') {
         // Try to get today's attendance list to find completed record
         const today = new Date().toISOString().split('T')[0];
         const attendanceList = await getAttendanceList({ start_date: today });
         const todayRecords = attendanceList.results || attendanceList || [];
-        
-        // Find today's completed attendance
+
+        // Find today's completed attendance (must be from TODAY, not yesterday)
         const todayAttendance = todayRecords.find(record => {
           const recordDate = new Date(record.punch_in).toDateString();
           const todayDate = new Date().toDateString();
           return recordDate === todayDate && record.punch_out;
         });
-        
+
         if (todayAttendance) {
           // Found completed attendance for today
           setAttendance(todayAttendance);
           buildActivityLog(todayAttendance);
         } else {
-          // No attendance today
-          setAttendance(data);
+          // No attendance today - reset to allow new punch-in
+          setAttendance({ status: 'not_punched_in' });
           setActivityLog([]);
           setDaySummary(null);
         }
       } else {
-        // Active attendance
-        setAttendance(data);
-        buildActivityLog(data);
+        // Active attendance - verify it's from today
+        const attendanceDate = new Date(data.punch_in).toDateString();
+        const todayDate = new Date().toDateString();
+
+        if (attendanceDate === todayDate) {
+          // Valid attendance from today
+          setAttendance(data);
+          buildActivityLog(data);
+        } else {
+          // Old attendance from previous day - reset
+          setAttendance({ status: 'not_punched_in' });
+          setActivityLog([]);
+          setDaySummary(null);
+        }
       }
     } catch (error) {
       console.error("Failed to load attendance:", error);
@@ -93,7 +104,7 @@ export default function EmployeeDashboard() {
 
   const buildActivityLog = (attendanceData) => {
     const log = [];
-    
+
     // Punch in
     if (attendanceData.punch_in) {
       log.push({
@@ -103,7 +114,7 @@ export default function EmployeeDashboard() {
         color: 'text-green-600'
       });
     }
-    
+
     // Breaks
     if (attendanceData.breaks && attendanceData.breaks.length > 0) {
       attendanceData.breaks.forEach(brk => {
@@ -113,7 +124,7 @@ export default function EmployeeDashboard() {
           icon: 'coffee',
           color: 'text-orange-600'
         });
-        
+
         if (brk.end_time) {
           log.push({
             time: new Date(brk.end_time),
@@ -124,7 +135,7 @@ export default function EmployeeDashboard() {
         }
       });
     }
-    
+
     // Punch out
     if (attendanceData.punch_out) {
       log.push({
@@ -133,13 +144,13 @@ export default function EmployeeDashboard() {
         icon: 'logout',
         color: 'text-red-600'
       });
-      
+
       // Generate day summary
       generateDaySummary(attendanceData);
     } else {
       setDaySummary(null);
     }
-    
+
     // Sort by time
     log.sort((a, b) => a.time - b.time);
     setActivityLog(log);
@@ -148,9 +159,9 @@ export default function EmployeeDashboard() {
   const generateDaySummary = (attendanceData) => {
     const punchIn = new Date(attendanceData.punch_in);
     const punchOut = new Date(attendanceData.punch_out);
-    
+
     const totalSeconds = Math.floor((punchOut - punchIn) / 1000);
-    
+
     let breakSeconds = 0;
     if (attendanceData.breaks) {
       attendanceData.breaks.forEach(brk => {
@@ -161,10 +172,10 @@ export default function EmployeeDashboard() {
         }
       });
     }
-    
+
     const workSeconds = totalSeconds - breakSeconds;
     const breakCount = attendanceData.breaks ? attendanceData.breaks.length : 0;
-    
+
     setDaySummary({
       date: punchIn.toLocaleDateString(),
       punchInTime: punchIn.toLocaleTimeString(),
@@ -189,7 +200,7 @@ export default function EmployeeDashboard() {
 
   const handlePunchOut = async () => {
     if (!confirm("Are you sure you want to punch out?")) return;
-    
+
     try {
       await punchOut();
       toast.success("Punched out successfully!");
@@ -247,7 +258,13 @@ export default function EmployeeDashboard() {
   const workTime = elapsedTime - breakTime;
   const isPunchedIn = attendance && attendance.status !== 'not_punched_in';
   const isOnBreak = attendance?.status === 'on_break';
-  const isPunchedOut = attendance && attendance.punch_out; // Check if already punched out today
+
+  // Check if punched out TODAY (not yesterday)
+  const isPunchedOut = attendance && attendance.punch_out && (() => {
+    const punchOutDate = new Date(attendance.punch_out).toDateString();
+    const todayDate = new Date().toDateString();
+    return punchOutDate === todayDate;
+  })();
 
   if (loading) {
     return (
@@ -292,17 +309,17 @@ export default function EmployeeDashboard() {
                     <p className="text-sm text-gray-600 mb-1">Total Time</p>
                     <p className="text-2xl font-bold text-blue-600">{daySummary.totalTime}</p>
                   </div>
-                  
+
                   <div className="bg-green-50 p-4 rounded-lg text-center">
                     <p className="text-sm text-gray-600 mb-1">Work Time</p>
                     <p className="text-2xl font-bold text-green-600">{daySummary.workTime}</p>
                   </div>
-                  
+
                   <div className="bg-orange-50 p-4 rounded-lg text-center">
                     <p className="text-sm text-gray-600 mb-1">Break Time</p>
                     <p className="text-2xl font-bold text-orange-600">{daySummary.breakTime}</p>
                   </div>
-                  
+
                   <div className="bg-purple-50 p-4 rounded-lg text-center">
                     <p className="text-sm text-gray-600 mb-1">Breaks Taken</p>
                     <p className="text-2xl font-bold text-purple-600">{daySummary.breakCount}</p>
@@ -317,7 +334,7 @@ export default function EmployeeDashboard() {
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Today's Activity</h3>
                 <div className="space-y-2">
                   {activityLog.map((activity, index) => (
-                    <div 
+                    <div
                       key={index}
                       className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
                     >
@@ -351,7 +368,7 @@ export default function EmployeeDashboard() {
     <PageLayout>
       <Section title="Time Tracking">
         <div className="bg-white rounded-lg shadow-lg p-8">
-          
+
           {/* Time Display */}
           <div className="text-center mb-8">
             <div className="mb-6">
@@ -441,7 +458,7 @@ export default function EmployeeDashboard() {
           <div className="bg-white rounded-lg shadow-lg p-6">
             <div className="space-y-3">
               {activityLog.map((activity, index) => (
-                <div 
+                <div
                   key={index}
                   className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
                 >
@@ -479,17 +496,17 @@ export default function EmployeeDashboard() {
                 <p className="text-sm text-gray-600 mb-1">Total Time</p>
                 <p className="text-2xl font-bold text-gray-800">{daySummary.totalTime}</p>
               </div>
-              
+
               <div className="bg-white p-4 rounded-lg shadow text-center">
                 <p className="text-sm text-gray-600 mb-1">Work Time</p>
                 <p className="text-2xl font-bold text-green-600">{daySummary.workTime}</p>
               </div>
-              
+
               <div className="bg-white p-4 rounded-lg shadow text-center">
                 <p className="text-sm text-gray-600 mb-1">Break Time</p>
                 <p className="text-2xl font-bold text-orange-600">{daySummary.breakTime}</p>
               </div>
-              
+
               <div className="bg-white p-4 rounded-lg shadow text-center">
                 <p className="text-sm text-gray-600 mb-1">Breaks Taken</p>
                 <p className="text-2xl font-bold text-blue-600">{daySummary.breakCount}</p>

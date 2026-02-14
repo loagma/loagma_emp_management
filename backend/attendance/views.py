@@ -42,22 +42,27 @@ class AttendanceViewSet(OrganizationQuerysetMixin, viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'])
     def punch_in(self, request):
-        """Punch in for the day"""
+        """Punch in for the day - only once per day"""
         user = request.user
         
-        # Check if already punched in today
+        # Check if already punched in today (including completed punches)
         today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
         existing = Attendance.objects.filter(
             user=user,
-            punch_in__gte=today_start,
-            punch_out__isnull=True
+            punch_in__gte=today_start
         ).first()
         
         if existing:
-            return Response(
-                {'error': 'Already punched in'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if existing.punch_out:
+                return Response(
+                    {'error': 'You have already completed your attendance for today. You can only punch in once per day.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                return Response(
+                    {'error': 'Already punched in today'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         
         # Create new attendance
         attendance = Attendance.objects.create(
@@ -72,7 +77,7 @@ class AttendanceViewSet(OrganizationQuerysetMixin, viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'])
     def punch_out(self, request):
-        """Punch out for the day"""
+        """Punch out for the day - only once per day"""
         user = request.user
         
         # Get current attendance
@@ -83,7 +88,15 @@ class AttendanceViewSet(OrganizationQuerysetMixin, viewsets.ModelViewSet):
         
         if not attendance:
             return Response(
-                {'error': 'No active punch-in found'},
+                {'error': 'No active punch-in found. You must punch in first.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Verify it's from today
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        if attendance.punch_in < today_start:
+            return Response(
+                {'error': 'Cannot punch out for a previous day. Please contact administrator.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         

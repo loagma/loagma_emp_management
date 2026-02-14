@@ -29,6 +29,7 @@ class AttendanceListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = [
-            'id', 'user_name', 'punch_in', 'punch_out',
+            'id', 'user', 'user_name', 'punch_in', 'punch_out',
             'total_work_time', 'total_break_time', 'status'
         ]
+        read_only_fields = ['id', 'user']

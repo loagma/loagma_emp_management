@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchEmployees } from "../features/employees/api/employeeApi";
 import { getAttendanceList } from "../features/attendance/api/attendanceApi";
 import { useAuth } from "../features/auth/AuthContext";
-import toast from "react-hot-toast";
 import PageLayout from "../components/ui/PageLayout";
 import Section from "../components/ui/Section";
 import Button from "../components/ui/Button";
@@ -31,27 +30,92 @@ export default function EmployeesPage() {
       const today = new Date().toISOString().split('T')[0];
       return getAttendanceList({ start_date: today });
     },
-    refetchInterval: 10000, // Refetch every 10 seconds for real-time updates
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
   });
 
   const employees = employeesData?.results || employeesData || [];
   const attendanceRecords = attendanceData?.results || attendanceData || [];
 
+  // Debug: Log attendance data to verify it's being fetched
+  console.log('Attendance Records:', attendanceRecords);
+  console.log('Employees:', employees.map(e => ({ id: e.id, email: e.email })));
+
   const getEmployeeStatus = (employeeId) => {
     // Find attendance record for this employee today
-    const attendance = attendanceRecords.find(
-      att => att.user === employeeId && !att.punch_out
-    );
-    
+    const attendance = attendanceRecords.find(att => {
+      if (att.user !== employeeId) return false;
+
+      // Check if attendance is from today
+      const attendanceDate = new Date(att.punch_in).toDateString();
+      const todayDate = new Date().toDateString();
+
+      return attendanceDate === todayDate;
+    });
+
+    console.log(`Employee ${employeeId} attendance:`, attendance);
+
     if (!attendance) {
-      return { status: 'not_active', label: 'Not Punched In', color: 'gray' };
+      return {
+        status: 'not_punched_in',
+        label: 'Not Punched In',
+        color: 'gray',
+        punchIn: null,
+        punchOut: null,
+        duration: null
+      };
     }
-    
+
+    // Calculate duration if punched out
+    let duration = null;
+    if (attendance.punch_out) {
+      const punchInTime = new Date(attendance.punch_in);
+      const punchOutTime = new Date(attendance.punch_out);
+      const durationMs = punchOutTime - punchInTime;
+      const hours = Math.floor(durationMs / (1000 * 60 * 60));
+      const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+      duration = `${hours}h ${minutes}m`;
+    }
+
+    // Format times
+    const formatTime = (dateStr) => {
+      const date = new Date(dateStr);
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    };
+
+    if (attendance.punch_out) {
+      return {
+        status: 'punched_out',
+        label: 'Punched Out',
+        color: 'red',
+        punchIn: formatTime(attendance.punch_in),
+        punchOut: formatTime(attendance.punch_out),
+        duration: duration
+      };
+    }
+
     if (attendance.status === 'on_break') {
-      return { status: 'on_break', label: 'On Break', color: 'orange' };
+      return {
+        status: 'on_break',
+        label: 'On Break',
+        color: 'orange',
+        punchIn: formatTime(attendance.punch_in),
+        punchOut: null,
+        duration: null
+      };
     }
-    
-    return { status: 'punched_in', label: 'Punched In', color: 'green' };
+
+    return {
+      status: 'punched_in',
+      label: 'Active',
+      color: 'green',
+      punchIn: formatTime(attendance.punch_in),
+      punchOut: null,
+      duration: null
+    };
   };
 
   const handleEmployeeClick = (employeeId) => {
@@ -99,7 +163,7 @@ export default function EmployeesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {employees.map(employee => {
             const employeeStatus = getEmployeeStatus(employee.id);
-            
+
             return (
               <div
                 key={employee.id}
@@ -123,7 +187,13 @@ export default function EmployeesPage() {
                       {employeeStatus.label}
                     </span>
                   )}
-                  {employeeStatus.status === 'not_active' && (
+                  {employeeStatus.status === 'punched_out' && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                      <Clock className="w-4 h-4" />
+                      Inactive
+                    </span>
+                  )}
+                  {employeeStatus.status === 'not_punched_in' && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
                       <Clock className="w-4 h-4" />
                       {employeeStatus.label}
@@ -148,14 +218,41 @@ export default function EmployeesPage() {
                   </div>
                 </div>
 
-                {/* Status */}
+                {/* Attendance Details */}
+                {employeeStatus.punchIn && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Punch In:</span>
+                        <span className="font-medium text-gray-800">{employeeStatus.punchIn}</span>
+                      </div>
+                      {employeeStatus.punchOut && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Punch Out:</span>
+                            <span className="font-medium text-gray-800">{employeeStatus.punchOut}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Duration:</span>
+                            <span className="font-medium text-blue-600">{employeeStatus.duration}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Attendance Status */}
                 <div className="pt-4 border-t">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                    employee.is_active 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-red-100 text-red-700'
-                  }`}>
-                    {employee.is_active ? 'Active' : 'Inactive'}
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${employeeStatus.status === 'punched_in' ? 'bg-green-100 text-green-700' :
+                    employeeStatus.status === 'on_break' ? 'bg-orange-100 text-orange-700' :
+                      employeeStatus.status === 'punched_out' ? 'bg-gray-100 text-gray-700' :
+                        'bg-gray-100 text-gray-500'
+                    }`}>
+                    {employeeStatus.status === 'punched_in' ? '● Working' :
+                      employeeStatus.status === 'on_break' ? '● On Break' :
+                        employeeStatus.status === 'punched_out' ? '● Day Complete' :
+                          '● Not Started'}
                   </span>
                 </div>
               </div>

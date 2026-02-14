@@ -35,3 +35,12 @@ export const deleteEmployee = async (id) => {
   const res = await api.delete(`/api/employees/${id}/`);
   return res.data;
 };
+
+// GET /api/employees/{id}/monthly-report/
+export const downloadMonthlyReport = async (id, year, month) => {
+  const res = await api.get(`/api/employees/${id}/monthly-report/`, {
+    params: { year, month },
+    responseType: 'blob' // Important for file download
+  });
+  return res.data;
+};
