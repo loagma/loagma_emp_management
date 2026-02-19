@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
+    'cloudinary',
+    'cloudinary_storage',
 
     # Local apps
     'users',
@@ -167,6 +169,29 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+
+# ===============================
+# MEDIA FILES & CLOUDINARY
+# ===============================
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+# Cloudinary Configuration
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', 'dtwystlqw'),
+    api_key=os.getenv('CLOUDINARY_API_KEY', '566628732572449'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET', 'XnXAye6oQNL293lxmLw6NX7-a8A'),
+    secure=True
+)
+
+# Use Cloudinary for media storage
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 

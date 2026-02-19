@@ -295,13 +295,13 @@ npm run dev
 ## 🔧 Configuration
 
 ### Backend URL
-Currently set to: `https://loagma-emp-management.onrender.com`
+Currently set to: `http://127.0.0.1:8000/`
 
 To change, update:
 ```javascript
 // frontend/src/app/axios.js
 const api = axios.create({
-  baseURL: "https://loagma-emp-management.onrender.com", // Change this
+  baseURL: "http://127.0.0.1:8000/", // Change this
 });
 ```
 

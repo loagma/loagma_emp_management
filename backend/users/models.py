@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser, UserManager as DjangoUserManager
 from django.db import models
+from cloudinary.models import CloudinaryField
 from core.managers import ActiveManager
 
 
@@ -41,6 +42,21 @@ class User(AbstractUser):
     
     is_deleted = models.BooleanField(default=False)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    profile_picture = CloudinaryField(
+        'image',
+        folder='profile_pictures',
+        null=True,
+        blank=True,
+        help_text='Employee profile picture',
+        transformation={
+            'width': 400,
+            'height': 400,
+            'crop': 'fill',
+            'gravity': 'face',
+            'quality': 'auto:good'
+        }
+    )
     
     # Managers
     objects = DjangoUserManager()  # Default manager with auth support

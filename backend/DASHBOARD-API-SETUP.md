@@ -28,14 +28,14 @@ cd backend
 python manage.py runserver
 ```
 
-Server should start at: `https://loagma-emp-management.onrender.com`
+Server should start at: `http://127.0.0.1:8000/`
 
 ### Step 2: Get Authentication Token
 
 First, you need to login to get a JWT token:
 
 ```bash
-curl -X POST https://loagma-emp-management.onrender.com/auth/login/ \
+curl -X POST http://127.0.0.1:8000//auth/login/ \
   -H "Content-Type: application/json" \
   -d '{
     "username": "your_username",
@@ -56,7 +56,7 @@ Copy the `access` token.
 ### Step 3: Test Dashboard Stats Endpoint
 
 ```bash
-curl -X GET https://loagma-emp-management.onrender.com/api/dashboard/stats/ \
+curl -X GET http://127.0.0.1:8000//api/dashboard/stats/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json"
 ```

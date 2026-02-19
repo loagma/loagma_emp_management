@@ -9,9 +9,10 @@ import DashboardSectionCard from "../components/ui/DashboardSectionCard";
 import MetricCard from "../components/cards/MetricCard";
 import StatusBadge from "../components/ui/StatusBadge";
 import Skeleton from "../components/ui/Skeleton";
+import ProfilePictureManager from "../components/profile/ProfilePictureManager";
 
 export default function EmployeeProfilePage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
   const [stats, setStats] = useState({
@@ -20,6 +21,12 @@ export default function EmployeeProfilePage() {
     pending: 0,
     completionRate: 0,
   });
+
+  const handleProfilePictureUpload = (newPictureUrl) => {
+    // Update user context with new profile picture
+    updateUser({ profile_picture: newPictureUrl });
+    toast.success('Profile picture updated successfully');
+  };
 
   useEffect(() => {
     if (user) {
@@ -78,22 +85,31 @@ export default function EmployeeProfilePage() {
     <PageLayout>
       {/* Employee Header */}
       <DashboardSectionCard title="Employee Profile">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-2xl font-bold">
-            {user?.username?.charAt(0).toUpperCase()}
+        <div className="flex items-start gap-6">
+          {/* Profile Picture Manager */}
+          <div className="flex-shrink-0">
+            <ProfilePictureManager
+              currentPictureUrl={user?.profile_picture}
+              onUploadSuccess={handleProfilePictureUpload}
+            />
           </div>
 
-          <div>
-            <h3 className="text-lg font-semibold">{user?.username}</h3>
-            <p className="text-sm text-gray-500">{user?.role_display}</p>
-            <p className="text-sm text-gray-500">{user?.email}</p>
-          </div>
+          {/* Profile Info */}
+          <div className="flex-1">
+            <div className="flex items-center gap-4 mb-4">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">{user?.username}</h3>
+                <p className="text-sm text-gray-600 mt-1">{user?.role_display}</p>
+                <p className="text-sm text-gray-600">{user?.email}</p>
+              </div>
 
-          <div className="ml-auto text-right">
-            <p className="text-sm text-gray-500">Organization</p>
-            <p className="font-semibold">{user?.organization_name}</p>
-            <p className="text-sm text-gray-500 mt-1">Department</p>
-            <p className="font-semibold">{user?.department_name}</p>
+              <div className="ml-auto text-right">
+                <p className="text-sm text-gray-500">Organization</p>
+                <p className="font-semibold text-gray-900">{user?.organization_name}</p>
+                <p className="text-sm text-gray-500 mt-2">Department</p>
+                <p className="font-semibold text-gray-900">{user?.department_name}</p>
+              </div>
+            </div>
           </div>
         </div>
       </DashboardSectionCard>

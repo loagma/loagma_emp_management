@@ -4,14 +4,14 @@ Test script for Dashboard Stats API endpoint
 Usage:
     python test_dashboard_api.py
 
-Make sure the Django server is running on https://loagma-emp-management.onrender.com
+Make sure the Django server is running on http://127.0.0.1:8000/
 """
 
 import requests
 import json
 
 # Configuration
-BASE_URL = "https://loagma-emp-management.onrender.com"
+BASE_URL = "http://127.0.0.1:8000/"
 DASHBOARD_STATS_URL = f"{BASE_URL}/api/dashboard/stats/"
 
 # You'll need to replace this with a valid token

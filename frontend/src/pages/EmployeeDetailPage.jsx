@@ -281,8 +281,16 @@ export default function EmployeeDetailPage() {
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="w-10 h-10 text-blue-600" />
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center overflow-hidden">
+                {employee.profile_picture_url || employee.profile_picture ? (
+                  <img
+                    src={employee.profile_picture_url || employee.profile_picture}
+                    alt={`${employee.first_name} ${employee.last_name}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-10 h-10 text-blue-600" />
+                )}
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-800">

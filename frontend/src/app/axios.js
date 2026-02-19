@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://loagma-emp-management.onrender.com", // Backend base URL
+  baseURL: "http://127.0.0.1:8000/", // Backend base URL
   headers: {
     "Content-Type": "application/json",
   },
@@ -35,7 +35,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem("refresh_token");
         if (refreshToken) {
           const response = await axios.post(
-            "https://loagma-emp-management.onrender.com/auth/refresh/",
+            "http://127.0.0.1:8000//auth/refresh/",
             { refresh: refreshToken }
           );
           const { access } = response.data;

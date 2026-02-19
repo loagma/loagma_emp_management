@@ -8,13 +8,16 @@ import PageLayout from "../components/ui/PageLayout";
 import Section from "../components/ui/Section";
 import Button from "../components/ui/Button";
 import CreateEmployeeModal from "../components/modals/CreateEmployeeModal";
-import { Plus, User, CheckCircle, Clock, Mail, Briefcase, Coffee } from "lucide-react";
+import EnhancedEmployeeCard from "../components/employees/EnhancedEmployeeCard";
+import EmployeeQuickView from "../components/employees/EmployeeQuickView";
+import { Plus, User } from "lucide-react";
 
 export default function EmployeesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
 
   // Fetch employees with React Query
   const { data: employeesData, isLoading: employeesLoading } = useQuery({
@@ -119,7 +122,7 @@ export default function EmployeesPage() {
   };
 
   const handleEmployeeClick = (employeeId) => {
-    navigate(`/employees/${employeeId}`);
+    setSelectedEmployeeId(employeeId);
   };
 
   const isAdmin = user?.is_superuser || user?.is_staff;
@@ -165,97 +168,12 @@ export default function EmployeesPage() {
             const employeeStatus = getEmployeeStatus(employee.id);
 
             return (
-              <div
+              <EnhancedEmployeeCard
                 key={employee.id}
-                onClick={() => handleEmployeeClick(employee.id)}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition cursor-pointer p-6 border-2 border-transparent hover:border-blue-500"
-              >
-                {/* Punch Status Badge */}
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                    <User className="w-8 h-8 text-blue-600" />
-                  </div>
-                  {employeeStatus.status === 'punched_in' && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                      <CheckCircle className="w-4 h-4" />
-                      {employeeStatus.label}
-                    </span>
-                  )}
-                  {employeeStatus.status === 'on_break' && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
-                      <Coffee className="w-4 h-4" />
-                      {employeeStatus.label}
-                    </span>
-                  )}
-                  {employeeStatus.status === 'punched_out' && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
-                      <Clock className="w-4 h-4" />
-                      Inactive
-                    </span>
-                  )}
-                  {employeeStatus.status === 'not_punched_in' && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
-                      <Clock className="w-4 h-4" />
-                      {employeeStatus.label}
-                    </span>
-                  )}
-                </div>
-
-                {/* Employee Info */}
-                <div className="mb-4">
-                  <h3 className="text-lg font-bold text-gray-800 mb-1">
-                    {employee.first_name} {employee.last_name}
-                  </h3>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      <span className="truncate">{employee.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" />
-                      <span className="capitalize">{employee.role}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Attendance Details */}
-                {employeeStatus.punchIn && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <div className="space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Punch In:</span>
-                        <span className="font-medium text-gray-800">{employeeStatus.punchIn}</span>
-                      </div>
-                      {employeeStatus.punchOut && (
-                        <>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Punch Out:</span>
-                            <span className="font-medium text-gray-800">{employeeStatus.punchOut}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Duration:</span>
-                            <span className="font-medium text-blue-600">{employeeStatus.duration}</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Attendance Status */}
-                <div className="pt-4 border-t">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${employeeStatus.status === 'punched_in' ? 'bg-green-100 text-green-700' :
-                    employeeStatus.status === 'on_break' ? 'bg-orange-100 text-orange-700' :
-                      employeeStatus.status === 'punched_out' ? 'bg-gray-100 text-gray-700' :
-                        'bg-gray-100 text-gray-500'
-                    }`}>
-                    {employeeStatus.status === 'punched_in' ? '● Working' :
-                      employeeStatus.status === 'on_break' ? '● On Break' :
-                        employeeStatus.status === 'punched_out' ? '● Day Complete' :
-                          '● Not Started'}
-                  </span>
-                </div>
-              </div>
+                employee={employee}
+                workingStatus={employeeStatus}
+                onCardClick={handleEmployeeClick}
+              />
             );
           })}
         </div>
@@ -268,6 +186,13 @@ export default function EmployeesPage() {
           </div>
         )}
       </Section>
+
+      {/* Quick View Modal */}
+      <EmployeeQuickView
+        employeeId={selectedEmployeeId}
+        isOpen={!!selectedEmployeeId}
+        onClose={() => setSelectedEmployeeId(null)}
+      />
 
       {/* Create Employee Modal */}
       {showCreateModal && (

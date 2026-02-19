@@ -1,13 +1,23 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Sidebar from "../components/navigation/Sidebar";
 import TopNavbar from "../components/navigation/TopNavbar";
 import { Outlet } from "react-router-dom";
 import CreateTaskModal from "../components/modals/CreateTaskModal";
 import CreateEmployeeModal from "../components/modals/CreateEmployeeModal";
+import { fetchEmployees } from "../features/employees/api/employeeApi";
 
 export default function MainLayout() {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [showAddEmployee, setShowAddEmployee] = useState(false);
+
+  // Fetch employees for task assignment
+  const { data: employeesData } = useQuery({
+    queryKey: ["employees"],
+    queryFn: fetchEmployees,
+  });
+
+  const employees = employeesData?.results || [];
 
   const handleTaskCreated = () => {
     setShowCreateTask(false);
@@ -50,6 +60,7 @@ export default function MainLayout() {
         <CreateTaskModal
           onClose={() => setShowCreateTask(false)}
           onSuccess={handleTaskCreated}
+          employees={employees}
         />
       )}
 
