@@ -4,7 +4,7 @@ Test backend API endpoints
 import requests
 import json
 
-BASE_URL = "http://127.0.0.1:8000/"
+BASE_URL = "https://loagma-emp-management.onrender.com"
 
 def test_endpoint(method, endpoint, data=None, token=None, description=""):
     """Test an API endpoint"""
