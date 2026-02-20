@@ -20,6 +20,7 @@ class TaskListSerializer(serializers.ModelSerializer):
             'id', 'title', 'status', 'status_display',
             'priority', 'priority_display', 'deadline',
             'assigned_to', 'assigned_to_user', 'is_overdue',
+            'is_paused', 'remaining_time',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -46,6 +47,7 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             'assigned_to', 'assigned_to_user',
             'created_by', 'created_by_user',
             'department', 'department_name', 'is_overdue',
+            'is_paused', 'paused_at', 'pause_duration', 'remaining_time',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_by', 'organization', 'created_at', 'updated_at']
@@ -124,3 +126,9 @@ class TaskStatusUpdateSerializer(serializers.Serializer):
     """Serializer for quick status update"""
     
     status = serializers.ChoiceField(choices=TaskStatus.choices)
+
+
+class TaskPriorityUpdateSerializer(serializers.Serializer):
+    """Serializer for quick priority update"""
+    
+    priority = serializers.ChoiceField(choices=Priority.choices)

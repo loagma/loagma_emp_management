@@ -8,6 +8,7 @@ class TaskStatus(models.TextChoices):
     IN_PROGRESS = 'in_progress', 'In Progress'
     COMPLETED = 'completed', 'Completed'
     DELAYED = 'delayed', 'Delayed'
+    PAUSED = 'paused', 'Paused'
 
 
 class Priority(models.TextChoices):
@@ -62,6 +63,12 @@ class Task(models.Model):
 
     deadline = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
+    
+    # Pause functionality fields
+    is_paused = models.BooleanField(default=False)
+    paused_at = models.DateTimeField(null=True, blank=True)
+    pause_duration = models.DurationField(null=True, blank=True)  # Total time paused
+    remaining_time = models.DurationField(null=True, blank=True)  # Time left when paused
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -88,7 +95,60 @@ class Task(models.Model):
         """Check if task is overdue"""
         if not self.deadline:
             return False
+        
+        # Paused tasks cannot be overdue
+        if self.is_paused:
+            return False
+            
         return (
             self.deadline < timezone.now() and
             self.status in [TaskStatus.ASSIGNED, TaskStatus.IN_PROGRESS]
         )
+    
+    def pause_task(self):
+        """Pause the task and calculate remaining time"""
+        if self.is_paused:
+            return False
+            
+        now = timezone.now()
+        self.is_paused = True
+        self.paused_at = now
+        self.status = TaskStatus.PAUSED
+        
+        # Calculate remaining time only if there's a deadline
+        if self.deadline and self.deadline > now:
+            self.remaining_time = self.deadline - now
+        else:
+            self.remaining_time = None
+            
+        self.save()
+        return True
+    
+    def resume_task(self):
+        """Resume the task and adjust deadline"""
+        if not self.is_paused or not self.paused_at:
+            return False
+            
+        now = timezone.now()
+        
+        # Calculate pause duration
+        pause_duration = now - self.paused_at
+        if self.pause_duration:
+            self.pause_duration += pause_duration
+        else:
+            self.pause_duration = pause_duration
+        
+        # Adjust deadline if we have remaining time
+        if self.remaining_time and self.deadline:
+            self.deadline = now + self.remaining_time
+        
+        # Reset pause fields
+        self.is_paused = False
+        self.paused_at = None
+        self.remaining_time = None
+        
+        # Set status back to in_progress
+        self.status = TaskStatus.IN_PROGRESS
+        
+        self.save()
+        return True

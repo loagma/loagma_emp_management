@@ -27,17 +27,22 @@ class IsManagerOrOwner(BasePermission):
     Permission class for Manager and Owner roles.
     Manager has department-scoped access.
     Owner has full organization access.
+    Superusers have full access.
     """
     
     def has_permission(self, request, view):
         return (
             request.user and
             request.user.is_authenticated and
-            request.user.role in ['owner', 'manager']
+            (request.user.is_superuser or request.user.role in ['owner', 'manager'])
         )
     
     def has_object_permission(self, request, view, obj):
         user = request.user
+        
+        # Superuser has full access
+        if user.is_superuser:
+            return True
         
         # Owner has full access
         if user.role == 'owner':

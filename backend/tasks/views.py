@@ -15,7 +15,8 @@ from .serializers import (
     TaskDetailSerializer,
     TaskCreateSerializer,
     TaskUpdateSerializer,
-    TaskStatusUpdateSerializer
+    TaskStatusUpdateSerializer,
+    TaskPriorityUpdateSerializer
 )
 from .services import TaskService
 
@@ -139,3 +140,70 @@ class TaskViewSet(OrganizationQuerysetMixin, viewsets.ModelViewSet):
             TaskDetailSerializer(updated_task).data,
             status=status.HTTP_200_OK
         )
+    
+    @action(detail=True, methods=['patch'], url_path='priority')
+    def update_priority(self, request, pk=None):
+        """
+        Quick priority update endpoint.
+        
+        PATCH /api/tasks/{id}/priority/
+        Body: {"priority": "high"}
+        """
+        task = self.get_object()
+        serializer = TaskPriorityUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Update priority directly
+        task.priority = serializer.validated_data['priority']
+        task.save()
+        
+        return Response(
+            TaskDetailSerializer(task).data,
+            status=status.HTTP_200_OK
+        )
+    
+    @action(detail=True, methods=['patch'], url_path='pause')
+    def pause_task(self, request, pk=None):
+        """
+        Pause a task.
+        
+        PATCH /api/tasks/{id}/pause/
+        """
+        task = self.get_object()
+        
+        if task.pause_task():
+            return Response(
+                {
+                    'message': 'Task paused successfully',
+                    'task': TaskDetailSerializer(task).data
+                },
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {'error': 'Task cannot be paused'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=True, methods=['patch'], url_path='resume')
+    def resume_task(self, request, pk=None):
+        """
+        Resume a paused task.
+        
+        PATCH /api/tasks/{id}/resume/
+        """
+        task = self.get_object()
+        
+        if task.resume_task():
+            return Response(
+                {
+                    'message': 'Task resumed successfully',
+                    'task': TaskDetailSerializer(task).data
+                },
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {'error': 'Task cannot be resumed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
