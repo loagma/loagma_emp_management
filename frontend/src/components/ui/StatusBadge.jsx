@@ -5,6 +5,7 @@ export default function StatusBadge({ status }) {
     in_progress: { label: "In Progress", style: "bg-yellow-100 text-yellow-700" },
     completed: { label: "Completed", style: "bg-green-100 text-green-700" },
     delayed: { label: "Delayed", style: "bg-red-100 text-red-700" },
+    paused: { label: "Paused", style: "bg-orange-100 text-orange-700" },
     // Legacy support
     pending: { label: "Pending", style: "bg-yellow-100 text-yellow-700" },
     overdue: { label: "Overdue", style: "bg-red-100 text-red-700" },

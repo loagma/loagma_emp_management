@@ -6,8 +6,9 @@ import toast from "react-hot-toast";
 import Modal from "./Modal";
 import Input from "../ui/form/Input";
 import Textarea from "../ui/form/Textarea";
-import Select from "../ui/form/Select";
 import Button from "../ui/Button";
+import InlinePrioritySelector from "../tasks/InlinePrioritySelector";
+import EmbeddedCalendar from "../tasks/EmbeddedCalendar";
 
 export default function CreateTaskModalEmployee({ onClose, onSuccess }) {
   const { user } = useAuth();
@@ -50,6 +51,20 @@ export default function CreateTaskModalEmployee({ onClose, onSuccess }) {
     }));
   };
 
+  const handlePrioritySelect = (priority) => {
+    setFormData(prev => ({
+      ...prev,
+      priority: priority
+    }));
+  };
+
+  const handleDateTimeSelect = (dateTime) => {
+    setFormData(prev => ({
+      ...prev,
+      deadline: dateTime
+    }));
+  };
+
   return (
     <Modal onClose={onClose} title="Create Task">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -71,23 +86,16 @@ export default function CreateTaskModalEmployee({ onClose, onSuccess }) {
           rows={4}
         />
 
-        <Select
+        <InlinePrioritySelector
+          selectedPriority={formData.priority}
+          onSelect={handlePrioritySelect}
           label="Priority"
-          name="priority"
-          value={formData.priority}
-          onChange={handleChange}
-        >
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </Select>
+        />
 
-        <Input
-          label="Deadline"
-          name="deadline"
-          type="datetime-local"
-          value={formData.deadline}
-          onChange={handleChange}
+        <EmbeddedCalendar
+          selectedDateTime={formData.deadline}
+          onSelect={handleDateTimeSelect}
+          label="Deadline (Optional)"
         />
 
         <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">

@@ -10,12 +10,15 @@ import DashboardGrid from "../components/ui/DashboardGrid";
 import DashboardSectionCard from "../components/ui/DashboardSectionCard";
 import DashboardSkeleton from "../components/ui/DashboardSkeleton";
 import PerformanceChart from "../components/charts/PerformanceChart";
+import BreakNotificationBadge from "../components/attendance/BreakNotificationBadge";
+import BreakNotificationPanel from "../components/attendance/BreakNotificationPanel";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [alerts, setAlerts] = useState(null);
   const [trendsData, setTrendsData] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -57,8 +60,20 @@ export default function DashboardPage() {
   return (
     <PageLayout>
 
+      {/* Break Notification Panel */}
+      <BreakNotificationPanel 
+        isOpen={showNotifications} 
+        onClose={() => setShowNotifications(false)} 
+      />
+
       {/* Overview Section */}
-      <Section title="Overview">
+      <div className="relative">
+        {/* Break Notification Badge - Top right corner */}
+        <div className="absolute -top-2 right-0 z-10">
+          <BreakNotificationBadge onNotificationClick={() => setShowNotifications(true)} />
+        </div>
+        
+        <Section title="Overview">
 
         <DashboardGrid cols={4}>
 
@@ -85,6 +100,7 @@ export default function DashboardPage() {
         </DashboardGrid>
 
       </Section>
+      </div>
 
 
       {/* Chart + Risk Layout */}

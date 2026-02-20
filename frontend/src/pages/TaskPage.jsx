@@ -91,6 +91,10 @@ export default function TaskPage() {
     }
   };
 
+  const handleTaskUpdate = () => {
+    loadData(); // Refresh the task list
+  };
+
   const handleSearch = () => {
     loadData();
   };
@@ -148,6 +152,12 @@ export default function TaskPage() {
               In Progress
             </Button>
             <Button
+              variant={statusFilter === "paused" ? "primary" : "secondary"}
+              onClick={() => setStatusFilter("paused")}
+            >
+              Paused
+            </Button>
+            <Button
               variant={statusFilter === "completed" ? "primary" : "secondary"}
               onClick={() => setStatusFilter("completed")}
             >
@@ -188,8 +198,8 @@ export default function TaskPage() {
                     key={task.id}
                     task={task}
                     onDelete={handleDeleteTask}
-                    onStatusChange={handleStatusChange}
                     onEdit={handleEditTask}
+                    onTaskUpdate={handleTaskUpdate}
                   />
                 ))}
               </tbody>

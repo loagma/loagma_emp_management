@@ -41,3 +41,21 @@ export const updateTaskStatus = async (id, status) => {
   const res = await api.patch(`/api/tasks/${id}/status/`, { status });
   return res.data;
 };
+
+// PATCH /api/tasks/{id}/pause/
+export const pauseTask = async (id) => {
+  const res = await api.patch(`/api/tasks/${id}/pause/`);
+  return res.data;
+};
+
+// PATCH /api/tasks/{id}/resume/
+export const resumeTask = async (id) => {
+  const res = await api.patch(`/api/tasks/${id}/resume/`);
+  return res.data;
+};
+
+// PATCH /api/tasks/{id}/priority/
+export const updateTaskPriority = async (id, priority) => {
+  const res = await api.patch(`/api/tasks/${id}/priority/`, { priority });
+  return res.data;
+};

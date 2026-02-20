@@ -3,9 +3,11 @@ import { createTask } from "../../features/tasks/api/taskApi";
 import toast from "react-hot-toast";
 import Modal from "./Modal";
 import Input from "../ui/form/Input";
-import Select from "../ui/form/Select";
 import Textarea from "../ui/form/Textarea";
 import Button from "../ui/Button";
+import InlineEmployeeSelector from "../tasks/InlineEmployeeSelector";
+import InlinePrioritySelector from "../tasks/InlinePrioritySelector";
+import EmbeddedCalendar from "../tasks/EmbeddedCalendar";
 
 export default function CreateTaskModal({ onClose, onSuccess, employees }) {
   const [loading, setLoading] = useState(false);
@@ -22,6 +24,27 @@ export default function CreateTaskModal({ onClose, onSuccess, employees }) {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const handleEmployeeSelect = (employeeId) => {
+    setFormData((prev) => ({
+      ...prev,
+      assigned_to: employeeId.toString(),
+    }));
+  };
+
+  const handlePrioritySelect = (priority) => {
+    setFormData((prev) => ({
+      ...prev,
+      priority: priority,
+    }));
+  };
+
+  const handleDateTimeSelect = (dateTime) => {
+    setFormData((prev) => ({
+      ...prev,
+      deadline: dateTime,
     }));
   };
 
@@ -134,39 +157,24 @@ export default function CreateTaskModal({ onClose, onSuccess, employees }) {
           rows={3}
         />
 
-        <Select
+        <InlineEmployeeSelector
+          employees={employees}
+          selectedEmployeeId={formData.assigned_to ? parseInt(formData.assigned_to) : null}
+          onSelect={handleEmployeeSelect}
           label="Assign To"
-          name="assigned_to"
-          value={formData.assigned_to}
-          onChange={handleChange}
           required
-        >
-          <option value="">Select employee</option>
-          {employees?.map((employee) => (
-            <option key={employee.id} value={employee.id}>
-              {employee.username} - {employee.role_display}
-            </option>
-          ))}
-        </Select>
+        />
 
-        <Select
+        <InlinePrioritySelector
+          selectedPriority={formData.priority}
+          onSelect={handlePrioritySelect}
           label="Priority"
-          name="priority"
-          value={formData.priority}
-          onChange={handleChange}
-        >
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="critical">Critical</option>
-        </Select>
+        />
 
-        <Input
-          label="Deadline"
-          name="deadline"
-          type="datetime-local"
-          value={formData.deadline}
-          onChange={handleChange}
+        <EmbeddedCalendar
+          selectedDateTime={formData.deadline}
+          onSelect={handleDateTimeSelect}
+          label="Deadline (Optional)"
         />
 
         <div className="flex justify-end gap-3 pt-4">

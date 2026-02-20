@@ -5,6 +5,7 @@ import PageLayout from "../components/ui/PageLayout";
 import Section from "../components/ui/Section";
 import Button from "../components/ui/Button";
 import { Clock, Coffee, LogIn, LogOut, Activity, CheckCircle2 } from "lucide-react";
+import BreakStartModal from "../components/attendance/BreakStartModal";
 
 export default function EmployeeDashboard() {
   const [attendance, setAttendance] = useState(null);
@@ -13,6 +14,7 @@ export default function EmployeeDashboard() {
   const [breakTime, setBreakTime] = useState(0);
   const [activityLog, setActivityLog] = useState([]);
   const [daySummary, setDaySummary] = useState(null);
+  const [showBreakModal, setShowBreakModal] = useState(false);
 
   useEffect(() => {
     loadAttendance();
@@ -211,15 +213,14 @@ export default function EmployeeDashboard() {
     }
   };
 
-  const handleStartBreak = async () => {
-    try {
-      await startBreak();
-      toast.success("Break started");
-      loadAttendance();
-    } catch (error) {
-      console.error("Failed to start break:", error);
-      toast.error(error.response?.data?.error || "Failed to start break");
-    }
+  const handleStartBreak = () => {
+    // Open the break modal instead of directly starting break
+    setShowBreakModal(true);
+  };
+
+  const handleBreakSuccess = () => {
+    // Called when break is successfully started from modal
+    loadAttendance();
   };
 
   const handleEndBreak = async () => {
@@ -521,6 +522,13 @@ export default function EmployeeDashboard() {
           </div>
         </Section>
       )}
+      
+      {/* Break Start Modal */}
+      <BreakStartModal
+        isOpen={showBreakModal}
+        onClose={() => setShowBreakModal(false)}
+        onSuccess={handleBreakSuccess}
+      />
     </PageLayout>
   );
 }
