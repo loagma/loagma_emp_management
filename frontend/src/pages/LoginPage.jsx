@@ -52,7 +52,7 @@ export default function LoginPage() {
       if (isAdmin) {
         navigate("/dashboard");
       } else {
-        navigate("/employee-dashboard");
+        navigate("/unified-dashboard");
       }
     } catch (error) {
       console.error("Login error:", error);

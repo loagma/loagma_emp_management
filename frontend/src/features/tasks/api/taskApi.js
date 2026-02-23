@@ -24,7 +24,7 @@ export const updateTask = async (id, data) => {
   return res.data;
 };
 
-// PATCH /api/tasks/{id}/
+// PATCH /api/tasks/{id}/ - Partial update (recommended for employees)
 export const partialUpdateTask = async (id, data) => {
   const res = await api.patch(`/api/tasks/${id}/`, data);
   return res.data;
@@ -43,8 +43,8 @@ export const updateTaskStatus = async (id, status) => {
 };
 
 // PATCH /api/tasks/{id}/pause/
-export const pauseTask = async (id) => {
-  const res = await api.patch(`/api/tasks/${id}/pause/`);
+export const pauseTask = async (id, reason = '') => {
+  const res = await api.patch(`/api/tasks/${id}/pause/`, { reason });
   return res.data;
 };
 

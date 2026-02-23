@@ -142,10 +142,11 @@ class Break(models.Model):
 
 
 class AdminNotification(models.Model):
-    """Notifications for admins when breaks exceed expected duration"""
+    """Notifications for admins when breaks exceed expected duration or tasks are paused"""
     
     NOTIFICATION_TYPE_CHOICES = [
         ('break_exceeded', 'Break Exceeded'),
+        ('task_pause', 'Task Paused'),
     ]
     
     STATUS_CHOICES = [
@@ -157,12 +158,21 @@ class AdminNotification(models.Model):
     break_record = models.ForeignKey(
         Break,
         on_delete=models.CASCADE,
-        related_name='notifications'
+        related_name='notifications',
+        null=True,
+        blank=True
     )
     organization = models.ForeignKey(
         'organization.Organization',
         on_delete=models.CASCADE,
         related_name='break_notifications'
+    )
+    employee = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        related_name='admin_notifications',
+        null=True,
+        blank=True
     )
     notification_type = models.CharField(
         max_length=20,
@@ -174,15 +184,16 @@ class AdminNotification(models.Model):
         choices=STATUS_CHOICES,
         default='unread'
     )
+    message = models.TextField(blank=True)  # General message field for task pauses
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     # Snapshot data (in case break is deleted)
     employee_name = models.CharField(max_length=255)
-    break_category_name = models.CharField(max_length=50)
-    break_reason = models.TextField()
-    expected_duration_minutes = models.IntegerField()
-    overtime_minutes = models.IntegerField()
+    break_category_name = models.CharField(max_length=50, null=True, blank=True)
+    break_reason = models.TextField(blank=True)
+    expected_duration_minutes = models.IntegerField(null=True, blank=True)
+    overtime_minutes = models.IntegerField(null=True, blank=True)
     
     class Meta:
         db_table = 'attendance_adminnotification'

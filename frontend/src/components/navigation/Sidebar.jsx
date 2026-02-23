@@ -21,7 +21,7 @@ export default function Sidebar() {
   const menu = [
     {
       name: "Dashboard",
-      path: isAdmin ? "/dashboard" : "/employee-dashboard",
+      path: isAdmin ? "/dashboard" : "/unified-dashboard",
       icon: LayoutDashboard,
     },
     {

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/AuthContext";
 import { fetchTasks } from "../features/tasks/api/taskApi";
 import toast from "react-hot-toast";
+import { ArrowLeft } from "lucide-react";
 import PageLayout from "../components/ui/PageLayout";
 import Section from "../components/ui/Section";
 import DashboardGrid from "../components/ui/DashboardGrid";
@@ -12,6 +14,7 @@ import Skeleton from "../components/ui/Skeleton";
 import ProfilePictureManager from "../components/profile/ProfilePictureManager";
 
 export default function EmployeeProfilePage() {
+  const navigate = useNavigate();
   const { user, updateUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
@@ -82,174 +85,185 @@ export default function EmployeeProfilePage() {
   }
 
   return (
-    <PageLayout>
-      {/* Employee Header */}
-      <DashboardSectionCard title="Employee Profile">
-        <div className="flex items-start gap-6">
-          {/* Profile Picture Manager */}
-          <div className="flex-shrink-0">
-            <ProfilePictureManager
-              currentPictureUrl={user?.profile_picture}
-              onUploadSuccess={handleProfilePictureUpload}
-            />
-          </div>
-
-          {/* Profile Info */}
-          <div className="flex-1">
-            <div className="flex items-center gap-4 mb-4">
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900">{user?.username}</h3>
-                <p className="text-sm text-gray-600 mt-1">{user?.role_display}</p>
-                <p className="text-sm text-gray-600">{user?.email}</p>
-              </div>
-
-              <div className="ml-auto text-right">
-                <p className="text-sm text-gray-500">Organization</p>
-                <p className="font-semibold text-gray-900">{user?.organization_name}</p>
-                <p className="text-sm text-gray-500 mt-2">Department</p>
-                <p className="font-semibold text-gray-900">{user?.department_name}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </DashboardSectionCard>
-
-      {/* Performance Metrics */}
-      <Section title="Performance Overview">
-        <DashboardGrid cols={4}>
-          <MetricCard
-            title="Completion Rate"
-            value={`${stats.completionRate.toFixed(1)}%`}
-          />
-          <MetricCard title="Tasks Completed" value={stats.completed} />
-          <MetricCard title="Pending Tasks" value={stats.pending} />
-          <MetricCard title="Total Tasks" value={stats.total} />
-        </DashboardGrid>
-      </Section>
-
-      {/* Charts + Activity */}
-      <DashboardGrid cols={3}>
-        <DashboardSectionCard
-          title="Task Distribution"
-          className="lg:col-span-2"
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/unified-dashboard')}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
-          <div className="h-[260px] bg-gray-50 rounded-lg p-6">
-            <div className="grid grid-cols-4 gap-4 h-full">
-              <div className="flex flex-col items-center justify-center bg-blue-100 rounded-lg">
-                <p className="text-3xl font-bold text-blue-600">
-                  {tasks.filter((t) => t.status === "assigned").length}
-                </p>
-                <p className="text-sm text-gray-600 mt-2">Assigned</p>
-              </div>
-              <div className="flex flex-col items-center justify-center bg-yellow-100 rounded-lg">
-                <p className="text-3xl font-bold text-yellow-600">
-                  {tasks.filter((t) => t.status === "in_progress").length}
-                </p>
-                <p className="text-sm text-gray-600 mt-2">In Progress</p>
-              </div>
-              <div className="flex flex-col items-center justify-center bg-green-100 rounded-lg">
-                <p className="text-3xl font-bold text-green-600">
-                  {tasks.filter((t) => t.status === "completed").length}
-                </p>
-                <p className="text-sm text-gray-600 mt-2">Completed</p>
-              </div>
-              <div className="flex flex-col items-center justify-center bg-red-100 rounded-lg">
-                <p className="text-3xl font-bold text-red-600">
-                  {tasks.filter((t) => t.status === "delayed").length}
-                </p>
-                <p className="text-sm text-gray-600 mt-2">Delayed</p>
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">Back to Dashboard</span>
+        </button>
+
+        {/* Employee Header */}
+        <DashboardSectionCard title="Employee Profile">
+          <div className="flex items-start gap-6">
+            {/* Profile Picture Manager */}
+            <div className="flex-shrink-0">
+              <ProfilePictureManager
+                currentPictureUrl={user?.profile_picture}
+                onUploadSuccess={handleProfilePictureUpload}
+              />
+            </div>
+
+            {/* Profile Info */}
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">{user?.username}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{user?.role_display}</p>
+                  <p className="text-sm text-gray-600">{user?.email}</p>
+                </div>
+
+                <div className="ml-auto text-right">
+                  <p className="text-sm text-gray-500">Organization</p>
+                  <p className="font-semibold text-gray-900">{user?.organization_name}</p>
+                  <p className="text-sm text-gray-500 mt-2">Department</p>
+                  <p className="font-semibold text-gray-900">{user?.department_name}</p>
+                </div>
               </div>
             </div>
           </div>
         </DashboardSectionCard>
 
-        <DashboardSectionCard title="Recent Activity">
-          <ul className="text-sm space-y-3">
-            {tasks.slice(0, 5).map((task, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="text-blue-500 mt-1">•</span>
-                <div>
-                  <p className="font-medium">{task.title}</p>
-                  <p className="text-xs text-gray-500">
-                    {task.status_display} - {formatDate(task.updated_at)}
+        {/* Performance Metrics */}
+        <Section title="Performance Overview">
+          <DashboardGrid cols={4}>
+            <MetricCard
+              title="Completion Rate"
+              value={`${stats.completionRate.toFixed(1)}%`}
+            />
+            <MetricCard title="Tasks Completed" value={stats.completed} />
+            <MetricCard title="Pending Tasks" value={stats.pending} />
+            <MetricCard title="Total Tasks" value={stats.total} />
+          </DashboardGrid>
+        </Section>
+
+        {/* Charts + Activity */}
+        <DashboardGrid cols={3}>
+          <DashboardSectionCard
+            title="Task Distribution"
+            className="lg:col-span-2"
+          >
+            <div className="h-[260px] bg-gray-50 rounded-lg p-6">
+              <div className="grid grid-cols-4 gap-4 h-full">
+                <div className="flex flex-col items-center justify-center bg-blue-100 rounded-lg">
+                  <p className="text-3xl font-bold text-blue-600">
+                    {tasks.filter((t) => t.status === "assigned").length}
                   </p>
+                  <p className="text-sm text-gray-600 mt-2">Assigned</p>
                 </div>
-              </li>
-            ))}
-            {tasks.length === 0 && (
-              <li className="text-gray-500 text-center py-4">
-                No recent activity
-              </li>
-            )}
-          </ul>
-        </DashboardSectionCard>
-      </DashboardGrid>
+                <div className="flex flex-col items-center justify-center bg-yellow-100 rounded-lg">
+                  <p className="text-3xl font-bold text-yellow-600">
+                    {tasks.filter((t) => t.status === "in_progress").length}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">In Progress</p>
+                </div>
+                <div className="flex flex-col items-center justify-center bg-green-100 rounded-lg">
+                  <p className="text-3xl font-bold text-green-600">
+                    {tasks.filter((t) => t.status === "completed").length}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">Completed</p>
+                </div>
+                <div className="flex flex-col items-center justify-center bg-red-100 rounded-lg">
+                  <p className="text-3xl font-bold text-red-600">
+                    {tasks.filter((t) => t.status === "delayed").length}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">Delayed</p>
+                </div>
+              </div>
+            </div>
+          </DashboardSectionCard>
 
-      {/* Task History */}
-      <DashboardSectionCard title="Task History">
-        {tasks.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No tasks assigned yet
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-gray-500">
-                <tr className="border-b text-left">
-                  <th className="py-3">Task</th>
-                  <th>Priority</th>
-                  <th>Status</th>
-                  <th>Deadline</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
+          <DashboardSectionCard title="Recent Activity">
+            <ul className="text-sm space-y-3">
+              {tasks.slice(0, 5).map((task, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-1">•</span>
+                  <div>
+                    <p className="font-medium">{task.title}</p>
+                    <p className="text-xs text-gray-500">
+                      {task.status_display} - {formatDate(task.updated_at)}
+                    </p>
+                  </div>
+                </li>
+              ))}
+              {tasks.length === 0 && (
+                <li className="text-gray-500 text-center py-4">
+                  No recent activity
+                </li>
+              )}
+            </ul>
+          </DashboardSectionCard>
+        </DashboardGrid>
 
-              <tbody>
-                {tasks.map((task) => (
-                  <tr key={task.id} className="border-b hover:bg-gray-50">
-                    <td className="py-3">
-                      <div>
-                        <p className="font-medium">{task.title}</p>
-                        {task.description && (
-                          <p className="text-xs text-gray-500 line-clamp-1">
-                            {task.description}
-                          </p>
-                        )}
-                      </div>
-                    </td>
-
-                    <td>
-                      <span
-                        className={`text-xs px-2 py-1 rounded ${
-                          task.priority === "critical"
-                            ? "bg-red-100 text-red-600"
-                            : task.priority === "high"
-                            ? "bg-orange-100 text-orange-600"
-                            : task.priority === "medium"
-                            ? "bg-blue-100 text-blue-600"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {task.priority_display}
-                      </span>
-                    </td>
-
-                    <td>
-                      <StatusBadge status={task.status} />
-                    </td>
-
-                    <td>{formatDate(task.deadline)}</td>
-
-                    <td className="text-gray-500">
-                      {formatDate(task.created_at)}
-                    </td>
+        {/* Task History */}
+        <DashboardSectionCard title="Task History">
+          {tasks.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No tasks assigned yet
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-gray-500">
+                  <tr className="border-b text-left">
+                    <th className="py-3">Task</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Deadline</th>
+                    <th>Created</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </DashboardSectionCard>
-    </PageLayout>
+                </thead>
+
+                <tbody>
+                  {tasks.map((task) => (
+                    <tr key={task.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3">
+                        <div>
+                          <p className="font-medium">{task.title}</p>
+                          {task.description && (
+                            <p className="text-xs text-gray-500 line-clamp-1">
+                              {task.description}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+
+                      <td>
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            task.priority === "critical"
+                              ? "bg-red-100 text-red-600"
+                              : task.priority === "high"
+                              ? "bg-orange-100 text-orange-600"
+                              : task.priority === "medium"
+                              ? "bg-blue-100 text-blue-600"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {task.priority_display}
+                        </span>
+                      </td>
+
+                      <td>
+                        <StatusBadge status={task.status} />
+                      </td>
+
+                      <td>{formatDate(task.deadline)}</td>
+
+                      <td className="text-gray-500">
+                        {formatDate(task.created_at)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </DashboardSectionCard>
+      </div>
+    </div>
   );
 }

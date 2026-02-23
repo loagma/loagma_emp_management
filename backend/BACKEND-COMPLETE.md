@@ -248,7 +248,7 @@ Add comprehensive test coverage:
 
 ## Server Status
 
-The development server is running at: https://loagma-emp-management.onrender.com/
+The development server is running at: http://127.0.0.1:8000//
 
 To start the server:
 ```bash

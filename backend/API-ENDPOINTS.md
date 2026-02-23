@@ -381,5 +381,5 @@ All endpoints automatically filter by user's organization. Cross-organization ac
 ---
 
 **API Version**: 1.0  
-**Base URL**: `https://loagma-emp-management.onrender.com`  
+**Base URL**: `http://127.0.0.1:8000/`  
 **Production URL**: TBD

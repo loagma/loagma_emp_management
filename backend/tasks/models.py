@@ -69,6 +69,7 @@ class Task(models.Model):
     paused_at = models.DateTimeField(null=True, blank=True)
     pause_duration = models.DurationField(null=True, blank=True)  # Total time paused
     remaining_time = models.DurationField(null=True, blank=True)  # Time left when paused
+    pause_reason = models.TextField(blank=True, null=True)  # Reason for pausing
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -105,7 +106,7 @@ class Task(models.Model):
             self.status in [TaskStatus.ASSIGNED, TaskStatus.IN_PROGRESS]
         )
     
-    def pause_task(self):
+    def pause_task(self, reason=None):
         """Pause the task and calculate remaining time"""
         if self.is_paused:
             return False
@@ -114,6 +115,7 @@ class Task(models.Model):
         self.is_paused = True
         self.paused_at = now
         self.status = TaskStatus.PAUSED
+        self.pause_reason = reason
         
         # Calculate remaining time only if there's a deadline
         if self.deadline and self.deadline > now:
@@ -122,7 +124,34 @@ class Task(models.Model):
             self.remaining_time = None
             
         self.save()
+        
+        # Create notification for managers/admins
+        self._create_pause_notification(reason)
+        
         return True
+    
+    def _create_pause_notification(self, reason):
+        """Create a notification when task is paused"""
+        from attendance.models import AdminNotification
+        
+        # Create notification for managers and admins
+        notification_message = f"Task '{self.title}' paused by {self.assigned_to.get_full_name() or self.assigned_to.username}"
+        if reason:
+            notification_message += f"\nReason: {reason}"
+        
+        AdminNotification.objects.create(
+            organization=self.organization,
+            employee=self.assigned_to,
+            notification_type='task_pause',
+            message=notification_message,
+            status='unread',
+            employee_name=self.assigned_to.get_full_name() or self.assigned_to.username,
+            break_reason=reason or '',
+            break_record=None,
+            break_category_name=None,
+            expected_duration_minutes=None,
+            overtime_minutes=None
+        )
     
     def resume_task(self):
         """Resume the task and adjust deadline"""

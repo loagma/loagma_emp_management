@@ -26,7 +26,7 @@ print(f"   Organization: {user.organization}")
 print(f"\n🔑 Access Token (first 50 chars): {access_token[:50]}...")
 
 # Test API endpoint
-url = "https://loagma-emp-management.onrender.comapi/attendance/break-categories/"
+url = "http://127.0.0.1:8000/api/attendance/break-categories/"
 headers = {
     "Authorization": f"Bearer {access_token}",
     "Content-Type": "application/json"

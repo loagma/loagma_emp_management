@@ -1,7 +1,9 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
+import FullScreenLayout from "../layouts/FullScreenLayout";
 import DashboardPage from "../pages/DashboardPage";
 import EmployeeDashboard from "../pages/EmployeeDashboard";
+import UnifiedEmployeeDashboard from "../pages/UnifiedEmployeeDashboard";
 import TaskPage from "../pages/TaskPage";
 import EmployeeTasksPage from "../pages/EmployeeTasksPage";
 import AnalyticsPage from "../pages/AnalyticsPage";
@@ -33,7 +35,7 @@ const DashboardRouter = () => {
   if (isAdmin) {
     return <Navigate to="/dashboard" replace />;
   } else {
-    return <Navigate to="/employee-dashboard" replace />;
+    return <Navigate to="/unified-dashboard" replace />;
   }
 };
 
@@ -58,6 +60,17 @@ export const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    element: (
+      <ProtectedRoute>
+        <FullScreenLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: "/unified-dashboard", element: <UnifiedEmployeeDashboard /> },
+      { path: "/employee-profile", element: <EmployeeProfilePage /> },
+    ],
   },
   {
     element: (

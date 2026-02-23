@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { createTask } from "../../features/tasks/api/taskApi";
-import { useAuth } from "../../features/auth/AuthContext";
+import { partialUpdateTask } from "../../features/tasks/api/taskApi";
 import toast from "react-hot-toast";
 import Modal from "./Modal";
 import Input from "../ui/form/Input";
@@ -10,8 +9,7 @@ import Button from "../ui/Button";
 import InlinePrioritySelector from "../tasks/InlinePrioritySelector";
 import EmbeddedCalendar from "../tasks/EmbeddedCalendar";
 
-export default function CreateTaskModalEmployee({ isOpen, onClose, onSuccess }) {
-  const { user } = useAuth();
+export default function EditTaskModalEmployee({ isOpen, onClose, task, onSuccess }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -19,29 +17,38 @@ export default function CreateTaskModalEmployee({ isOpen, onClose, onSuccess }) 
     deadline: "",
   });
 
-  const createTaskMutation = useMutation({
-    mutationFn: createTask,
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        title: task.title || "",
+        description: task.description || "",
+        priority: task.priority || "medium",
+        deadline: task.deadline || "",
+      });
+    }
+  }, [task]);
+
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ id, data }) => partialUpdateTask(id, data),
     onSuccess: () => {
-      toast.success("Task created successfully!");
+      toast.success("Task updated successfully!");
       onClose();
       onSuccess?.();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.detail || "Failed to create task");
+      toast.error(error.response?.data?.detail || "Failed to update task");
     },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Auto-assign to current user
-    const taskData = {
-      ...formData,
-      assigned_to: user.id
-      // Status will default to 'assigned' on backend
-    };
+    if (!task) return;
     
-    createTaskMutation.mutate(taskData);
+    updateTaskMutation.mutate({
+      id: task.id,
+      data: formData
+    });
   };
 
   const handleChange = (e) => {
@@ -66,10 +73,10 @@ export default function CreateTaskModalEmployee({ isOpen, onClose, onSuccess }) 
     }));
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !task) return null;
 
   return (
-    <Modal onClose={onClose} title="Create Task">
+    <Modal onClose={onClose} title="Edit Task">
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Title"
@@ -101,10 +108,6 @@ export default function CreateTaskModalEmployee({ isOpen, onClose, onSuccess }) 
           label="Deadline (Optional)"
         />
 
-        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded">
-          <p>📌 This task will be assigned to you automatically</p>
-        </div>
-
         <div className="flex justify-end gap-3 pt-4">
           <Button
             type="button"
@@ -115,9 +118,9 @@ export default function CreateTaskModalEmployee({ isOpen, onClose, onSuccess }) 
           </Button>
           <Button
             type="submit"
-            disabled={createTaskMutation.isPending}
+            disabled={updateTaskMutation.isPending}
           >
-            {createTaskMutation.isPending ? "Creating..." : "Create Task"}
+            {updateTaskMutation.isPending ? "Updating..." : "Update Task"}
           </Button>
         </div>
       </form>

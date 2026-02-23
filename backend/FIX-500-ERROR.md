@@ -61,7 +61,7 @@ Look for Python error messages in the terminal where backend is running.
 
 ## Quick Test
 After restarting, test these URLs in browser:
-- https://loagma-emp-management.onrender.com/admin (should load Django admin)
-- https://loagma-emp-management.onrender.com/api/tasks/ (should return JSON)
+- http://127.0.0.1:8000//admin (should load Django admin)
+- http://127.0.0.1:8000//api/tasks/ (should return JSON)
 
 If these work, the frontend should work too!

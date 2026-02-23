@@ -79,7 +79,7 @@ const BreakNotificationPanel = ({ isOpen, onClose }) => {
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <AlertCircle className="w-6 h-6 text-orange-600" />
-            <h2 className="text-xl font-bold text-gray-900">Break Notifications</h2>
+            <h2 className="text-xl font-bold text-gray-900">Notifications</h2>
           </div>
           <button
             onClick={onClose}
@@ -149,7 +149,9 @@ const BreakNotificationPanel = ({ isOpen, onClose }) => {
                         {notification.employee_name}
                       </span>
                       <span className="text-sm text-gray-500">
-                        exceeded break time
+                        {notification.notification_type === 'task_pause' 
+                          ? 'paused a task' 
+                          : 'exceeded break time'}
                       </span>
                     </div>
                     <span className="text-xs text-gray-500">
@@ -157,22 +159,32 @@ const BreakNotificationPanel = ({ isOpen, onClose }) => {
                     </span>
                   </div>
 
-                  <div className="ml-7 space-y-1 text-sm">
-                    <div className="text-gray-700">
-                      <span className="font-medium">Category:</span> {notification.break_category_name}
-                    </div>
-                    {notification.break_reason && (
-                      <div className="text-gray-700">
-                        <span className="font-medium">Reason:</span> {notification.break_reason}
+                  {notification.notification_type === 'task_pause' ? (
+                    /* Task Pause Notification */
+                    <div className="ml-7 space-y-1 text-sm">
+                      <div className="text-gray-700 whitespace-pre-line">
+                        {notification.message}
                       </div>
-                    )}
-                    <div className="text-gray-700">
-                      <span className="font-medium">Expected:</span> {notification.expected_duration_minutes} minutes
                     </div>
-                    <div className="text-orange-600 font-medium">
-                      Overtime: {notification.overtime_minutes} minutes
+                  ) : (
+                    /* Break Exceeded Notification */
+                    <div className="ml-7 space-y-1 text-sm">
+                      <div className="text-gray-700">
+                        <span className="font-medium">Category:</span> {notification.break_category_name}
+                      </div>
+                      {notification.break_reason && (
+                        <div className="text-gray-700">
+                          <span className="font-medium">Reason:</span> {notification.break_reason}
+                        </div>
+                      )}
+                      <div className="text-gray-700">
+                        <span className="font-medium">Expected:</span> {notification.expected_duration_minutes} minutes
+                      </div>
+                      <div className="text-orange-600 font-medium">
+                        Overtime: {notification.overtime_minutes} minutes
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Actions */}
                   <div className="ml-7 mt-3 flex space-x-2">

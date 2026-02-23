@@ -165,13 +165,15 @@ class TaskViewSet(OrganizationQuerysetMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['patch'], url_path='pause')
     def pause_task(self, request, pk=None):
         """
-        Pause a task.
+        Pause a task with a reason.
         
         PATCH /api/tasks/{id}/pause/
+        Body: {"reason": "Need to work on higher priority task"}
         """
         task = self.get_object()
+        reason = request.data.get('reason', '')
         
-        if task.pause_task():
+        if task.pause_task(reason=reason):
             return Response(
                 {
                     'message': 'Task paused successfully',
